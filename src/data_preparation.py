@@ -4,7 +4,7 @@ import glob
 import numpy as np
 from tqdm import tqdm
 
-from constants import LOWEST_PITCH, NUMBER_OF_PITCHES, LPD_FILE_EXTENSION, MAESTRO_FILE_EXTENSION
+from src.constants import LOWEST_PITCH, NUMBER_OF_PITCHES, LPD_FILE_EXTENSION, MAESTRO_FILE_EXTENSION
 
 
 def is_divisible_by(pianoroll, N):

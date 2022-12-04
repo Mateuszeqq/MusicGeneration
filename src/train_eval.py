@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 import pypianoroll
 import muspy
-from constants import LATENT_DIM, NUMBER_OF_PITCHES, LOWEST_PITCH
-from utils import write_model_params_to_tensorboard
+from src.constants import LATENT_DIM, NUMBER_OF_PITCHES, LOWEST_PITCH
+from src.utils import write_model_params_to_tensorboard
 import torchvision.utils as vutils
 from statistics import mean
 

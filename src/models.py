@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
-from constants import LATENT_DIM, NUMBER_OF_PITCHES, BASIC_LENGTH
+from src.constants import LATENT_DIM, NUMBER_OF_PITCHES, BASIC_LENGTH
 
 
 class TemporalVectors(nn.Module):
