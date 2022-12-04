@@ -26,7 +26,7 @@ class Metrics:
 
     def array_to_pianoroll(self, music_array):
         pr = pypianoroll.Multitrack()
-        pr.append(pypianoroll.BinaryTrack(pianoroll=music_array))
+        pr.append(pypianoroll.BinaryTrack(pianoroll=music_array.transpose()))
         pr.resolution = self.resolution
         return pr
 
