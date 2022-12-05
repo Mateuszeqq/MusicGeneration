@@ -4,6 +4,7 @@
 # Generate music
 You can generate a sample via command line by typing: `python src/generate.py` <br>
 You can also use falgs:<br>
+**--name [VALUE]**<br>
 **--seq_len [VALUE]** (default: 3)<br>
 **--resolution [VALUE]** (default: 6)<br>
 **--threshold [VALUE]** (default 0.5)<br>
