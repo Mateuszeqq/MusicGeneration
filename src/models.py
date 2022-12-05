@@ -5,6 +5,10 @@ from src.constants import LATENT_DIM, NUMBER_OF_PITCHES, BASIC_LENGTH
 
 
 class TemporalVectors(nn.Module):
+    """
+    Class, which from a given vector produces N vectors, which are then fed to the bar generator. It is used to hold 
+    information about the song to generate the music sequence.
+    """
     def __init__(self, latent_vector_size, hidden_size, num_layers, sequence_length, device):
         super(TemporalVectors, self).__init__()
         self.latent_vector_size = latent_vector_size
@@ -32,6 +36,12 @@ class TemporalVectors(nn.Module):
 
 
 class SequenceBarGenerator(nn.Module):
+    """
+    When a latent vector is given this model firstly creates N vectors out of it. Then each created vector (noise) is passed through 
+    the bar_generator model which creates a music bar.
+    :param vectors_generator: model that from a given vector produces N vectors
+    :bar_generator: generator model that produces single bar out of latent vector (noise).
+    """
     def __init__(self, vectors_generator, bar_generator):
         super(SequenceBarGenerator, self).__init__()
         self.vectors_generator = vectors_generator
@@ -51,6 +61,11 @@ class SequenceBarGenerator(nn.Module):
 
 
 class GeneratorBlock(torch.nn.Module):
+    """
+    The basic building unit of the generator. It is implemented to parametrised a generator model.
+    :torch.nn t_conv: torch ConvTranspose2d module
+    :torch.nn batchnorm: torch BatchNorm2d module
+    """
     def __init__(self, in_dim, out_dim, kernel, stride):
         super().__init__()
         self.t_conv = torch.nn.ConvTranspose2d(in_dim, out_dim, kernel, stride)
@@ -68,6 +83,9 @@ class GeneratorBlock(torch.nn.Module):
 
 
 class Generator(torch.nn.Module):
+    """
+    A Generator model that creates a single music bar out of single latent vector.
+    """
     def __init__(self):
         super().__init__()
         self.main = nn.Sequential(
@@ -92,6 +110,9 @@ class Generator(torch.nn.Module):
 
 
 class LayerNorm(torch.nn.Module):
+    """
+    An implementation of Layer normalization that does not require size information.
+    """
     def __init__(self, n_features, eps=1e-5, affine=True):
         super().__init__()
         self.n_features = n_features
@@ -100,11 +121,6 @@ class LayerNorm(torch.nn.Module):
         if self.affine:
             self.gamma = torch.nn.Parameter(torch.Tensor(n_features).uniform_())
             self.beta = torch.nn.Parameter(torch.zeros(n_features))
-
-    def __str__(self) -> str:
-        model_parameters = filter(lambda p: p.requires_grad, self.parameters())
-        params = sum([np.prod(p.size()) for p in model_parameters])
-        return super().__str__() + "\nTrainable parameters: {}".format(params)
 
     def forward(self, x):
         shape = [-1] + [1] * (x.dim() - 1)
@@ -118,6 +134,11 @@ class LayerNorm(torch.nn.Module):
 
 
 class DiscriminatorBlock(torch.nn.Module):
+    """
+    The basic building unit of the discriminator. It is implemented to parametrised a discriminator model.
+    :torch.nn conv: torch Conv2d module
+    :torch.nn layernorm: torch LayerNorm module
+    """
     def __init__(self, in_dim, out_dim, kernel, stride):
         super().__init__()
         self.conv = torch.nn.Conv2d(in_dim, out_dim, kernel, stride)
@@ -135,12 +156,15 @@ class DiscriminatorBlock(torch.nn.Module):
 
 
 class Discriminator(torch.nn.Module):
+    """
+    A Discriminator (critic in WGAN) model which evaluates whether a given sample is true or false. 
+    """
     def __init__(self):
         super().__init__()
-        sequence_multiplier = 3
+        self.sequence_multiplier = 3
         self.main = nn.Sequential(
             DiscriminatorBlock(1, 16, (1, 12), (1, 12)),
-            DiscriminatorBlock(16, 16, (4 * sequence_multiplier, 1), (4 * sequence_multiplier, 1)),
+            DiscriminatorBlock(16, 16, (4 * self.sequence_multiplier, 1), (4 * self.sequence_multiplier, 1)),
             DiscriminatorBlock(16, 64, (1, 3), (1, 1)),
             DiscriminatorBlock(64, 64, (1, 4), (1, 4)),
             DiscriminatorBlock(64, 128, (4, 1), (4, 1)),
