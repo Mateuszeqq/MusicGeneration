@@ -1,4 +1,4 @@
-# Sequentional Music Generation using GANs
+# Sequentional Music Generation using Wesserstein GAN
 *autor: Mateusz Szczepanowski*
 
 # Generate music
@@ -7,6 +7,9 @@ You can also use falgs:<br>
 **--seq_len [VALUE]** (default: 3)<br>
 **--resolution [VALUE]** (default: 6)<br>
 **--threshold [VALUE]** (default 0.5)<br>
+
+# Train the model
+You can train the model via the GAN_notebooks, which is located in the notebooks directory. All important params can be set in the src/constants.py file.
 
 # Quality evaluation
 You can read evaluation report in **./reports** directory. There is also **./samples** directory where you can see the progression that the model makes along with the learning process. In **./reports** directory there is also a CSV file with raw metrics data - **metrics_eval.csv**.
