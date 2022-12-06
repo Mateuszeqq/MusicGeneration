@@ -10,9 +10,9 @@ if __name__ == "__main__":
     parser.add_argument('--name', help='Name of the file.')
     args = parser.parse_args()
 
-    seq_len = args.seq_len
-    resolution = args.resolution
-    threshold = args.threshold
+    seq_len = int(args.seq_len)
+    resolution = float(args.resolution)
+    threshold = float(args.threshold)
     name = args.name
     generator, _ = get_the_latest_models()
 

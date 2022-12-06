@@ -1,6 +1,7 @@
 import pypianoroll
 import muspy
 from PIL import Image
+from typing import Union, List, Tuple
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
@@ -13,15 +14,17 @@ import glob
 import os
 
 
-def get_the_latest_models():
+def get_the_latest_models(using_notebook: bool=False) -> Tuple[Generator, Discriminator]:
     """
     Method that returns the latest generator and discriminator.
     :return: generator and discriminator models
     """
-    list_of_generators = glob.glob('models/generators/*')
-    list_of_discriminators = glob.glob('models/discriminators/*')
+    prefix = '../' if using_notebook else '' 
+    list_of_generators = glob.glob(prefix + 'models/generators/*')
+    list_of_discriminators = glob.glob(prefix + 'models/discriminators/*')
     latest_generator = max(list_of_generators, key=os.path.getctime)
     latest_discriminator = max(list_of_discriminators, key=os.path.getctime)
+    print(f'Discriminator: {latest_discriminator}\nGenerator: {latest_generator}')
     generator = torch.load(latest_generator)
     discriminator = torch.load(latest_discriminator)
     return generator, discriminator
@@ -37,7 +40,8 @@ def midi_to_wav(midi_path: str, output_path: str) -> None:
     muspy.outputs.write_audio(path=output_path, music=music)
 
 
-def write_model_params_to_tensorboard(tb_writer, model, epoch, prefix) -> None:
+def write_model_params_to_tensorboard(tb_writer: SummaryWriter, model: Union[SequenceBarGenerator, Discriminator],\
+     epoch: int, prefix: str) -> None:
     """
     Method that writes given model parameters to a tensorboard.
     :param tb_writer: Tensorboard writer instance
@@ -50,7 +54,8 @@ def write_model_params_to_tensorboard(tb_writer, model, epoch, prefix) -> None:
         tb_writer.add_histogram(prefix + name + '_grad', param.grad, epoch)
 
 
-def write_models_architecture_to_tensorboard(generator, discriminator, real_images_sample, noise):
+def write_models_architecture_to_tensorboard(generator: SequenceBarGenerator, discriminator: Discriminator,\
+     real_images_sample: torch.Tensor, noise: torch.Tensor) -> None:
     """
     Method that writes given model parameters to a tensorboard.
     :param generator: generator model
@@ -80,7 +85,7 @@ def binarize_array(array: np.ndarray, threshold: float) -> np.ndarray:
     return array
 
 
-def generate_random_midi_array(generator, device, threshold: float) -> np.ndarray:
+def generate_random_midi_array(generator: SequenceBarGenerator, device: torch.device, threshold: float) -> np.ndarray:
     """
     Method that generates a meaningful array out of a noise using generator model.
     :param generator: a generator model, that maps noise into a meaningful array
@@ -94,7 +99,7 @@ def generate_random_midi_array(generator, device, threshold: float) -> np.ndarra
     return img.transpose()
 
 
-def array_to_midi(music_array, midi_path, plot=False, resolution=6):
+def array_to_midi(music_array: np.ndarray, midi_path:str, plot: bool=False, resolution: float=6) -> pypianoroll.multitrack.Multitrack:
     """
     Method that converts an array to midi file.
     :param music_array: an array to be converted
@@ -110,8 +115,8 @@ def array_to_midi(music_array, midi_path, plot=False, resolution=6):
     pr.write(midi_path)
     return pr
 
-
-def show_learning_process(img_list, threshold=0.5):
+# TODO
+def show_learning_process(img_list: List[np.ndarray], threshold: float=0.5) -> HTML:
     """
     Method that ilustrates the learning process.
     :param img_list: list of arrays to do a slideshow of the learning process
@@ -124,11 +129,10 @@ def show_learning_process(img_list, threshold=0.5):
     plt.axis("off")
     ims = [[plt.imshow(img.transpose(), cmap='gray', animated=True)] for img in img_list]
     ani = animation.ArtistAnimation(fig, ims, interval=250, repeat_delay=250, blit=True)
-
     return HTML(ani.to_jshtml())
 
-
-def get_pitch_range_tuple(img_path):
+# TODO
+def get_pitch_range_tuple(img_path:str):
     """
     Method that brings out the tuple range from a photo that represents music
     :param img_path: path to an image
@@ -140,16 +144,15 @@ def get_pitch_range_tuple(img_path):
     return pypianoroll.pitch_range_tuple(pr.tracks[0].pianoroll)
 
 
-def get_device():
+def get_device() -> torch.device:
     """
     Method that returns device. CUDA if it's avaible, CPU otherwise.
     """
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-    print(device)
     return device
 
 
-def save_models(discriminator, generator, prefix):
+def save_models(discriminator: Discriminator, generator: SequenceBarGenerator, prefix: str) -> None:
     """
     Method that saves model to a directory.
     :param discriminator: discriminator model
@@ -160,7 +163,7 @@ def save_models(discriminator, generator, prefix):
     torch.save(discriminator, f'../models/discriminators/{prefix}_discriminator.pt')
 
 
-def write_samples(name, generator, device, threshold, resolution=4):
+def write_samples(name: str, generator: SequenceBarGenerator, device: torch.device, threshold: float, resolution: float=4) -> None:
     """
     Method that saves samples (images, midi and wav files).
     :param name: name of the file (image, midi, wav)
@@ -175,7 +178,7 @@ def write_samples(name, generator, device, threshold, resolution=4):
     midi_to_wav(f'../samples/midi/{name}.midi', f'../samples/music/{name}.wav')
 
 
-def write_losses_to_tensorboard(writer, critic_loss, generator_loss, step):
+def write_losses_to_tensorboard(writer: SummaryWriter, critic_loss: torch.Tensor, generator_loss, step: int) -> None:
     """
     Method that writes losses (generator and discriminator) to the tensorboard.
     :param writer: tensorboard writer instance
